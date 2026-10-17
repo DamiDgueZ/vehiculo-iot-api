@@ -1,4 +1,5 @@
 import asyncio
+from fastapi.encoders import jsonable_encoder
 from typing import List, Optional
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException
 from pydantic import BaseModel
@@ -328,13 +329,12 @@ async def websocket_endpoint(websocket: WebSocket, id_vehiculo: int):
     await manager.connect(id_vehiculo, websocket)
     try:
         estado_actual = VehiculoIOTService.obtener_estado(id_vehiculo)
-        await websocket.send_json({"evento": "estado_inicial", "estado": estado_actual})
-
+        await websocket.send_json({"evento": "estado_inicial", "estado": jsonable_encoder(estado_actual)})
+        
         while True:
             await websocket.receive_text()
-    except WebSocketDisconnect:
-        manager.disconnect(id_vehiculo, websocket)
-    except Exception:
+    except Exception as e:
+        print(f"Error en WebSocket: {e}")
         manager.disconnect(id_vehiculo, websocket)
 
 @app.get("/")
