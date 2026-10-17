@@ -90,8 +90,13 @@ class MovimientoDemoRequest(BaseModel):
     pausa_ms: int = 0
 
 
+# --- RUTA RAÍZ ---
+@app.get("/", tags=["General"])
+def read_root():
+    return {"message": "API de Retroexcavadora IoT activa y conectada a AWS RDS"}
+
 # --- ENDPOINTS: VEHÍCULOS ---
-@app.post("/vehiculos")
+@app.post("/vehiculos", tags=["Vehículos"])
 def crear_vehiculo(data: VehiculoCreateRequest):
     try:
         id_vehiculo = VehiculoIOTService.crear_vehiculo(data.nombre, data.modelo, data.descripcion, data.microcontrolador)
@@ -99,18 +104,18 @@ def crear_vehiculo(data: VehiculoCreateRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.get("/vehiculos")
+@app.get("/vehiculos", tags=["Vehículos"])
 def get_vehiculos():
     return VehiculoIOTService.obtener_vehiculos()
 
-@app.get("/vehiculos/{id_vehiculo}")
+@app.get("/vehiculos/{id_vehiculo}", tags=["Vehículos"])
 def get_vehiculo_by_id(id_vehiculo: int):
     vehiculo = VehiculoIOTService.obtener_vehiculo(id_vehiculo)
     if not vehiculo:
         raise HTTPException(status_code=404, detail="Vehículo no encontrado")
     return vehiculo
 
-@app.put("/vehiculos/{id_vehiculo}")
+@app.put("/vehiculos/{id_vehiculo}", tags=["Vehículos"])
 def actualizar_vehiculo(id_vehiculo: int, data: VehiculoUpdateRequest):
     try:
         VehiculoIOTService.actualizar_vehiculo(id_vehiculo, data.nombre, data.modelo, data.descripcion, data.microcontrolador, data.activo)
@@ -118,7 +123,7 @@ def actualizar_vehiculo(id_vehiculo: int, data: VehiculoUpdateRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.delete("/vehiculos/{id_vehiculo}")
+@app.delete("/vehiculos/{id_vehiculo}", tags=["Vehículos"])
 def eliminar_vehiculo(id_vehiculo: int):
     try:
         VehiculoIOTService.eliminar_vehiculo(id_vehiculo)
@@ -128,7 +133,7 @@ def eliminar_vehiculo(id_vehiculo: int):
 
 
 # --- ENDPOINTS: COMANDOS ---
-@app.post("/vehiculos/{id_vehiculo}/comandos")
+@app.post("/vehiculos/{id_vehiculo}/comandos", tags=["Comandos"])
 def crear_comando(id_vehiculo: int, data: ComandoCreateRequest):
     try:
         id_comando = VehiculoIOTService.crear_comando(id_vehiculo, data.nombre, data.codigo, data.descripcion)
@@ -136,12 +141,12 @@ def crear_comando(id_vehiculo: int, data: ComandoCreateRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.get("/vehiculos/{id_vehiculo}/comandos")
+@app.get("/vehiculos/{id_vehiculo}/comandos", tags=["Comandos"])
 def get_comandos(id_vehiculo: int):
     comandos = VehiculoIOTService.obtener_comandos_vehiculo(id_vehiculo)
     return {"vehiculo_id": id_vehiculo, "comandos": comandos}
 
-@app.put("/comandos/{id_comando}")
+@app.put("/comandos/{id_comando}", tags=["Comandos"])
 def actualizar_comando(id_comando: int, data: ComandoUpdateRequest):
     try:
         VehiculoIOTService.actualizar_comando(id_comando, data.nombre, data.codigo, data.descripcion, data.activo)
@@ -149,7 +154,7 @@ def actualizar_comando(id_comando: int, data: ComandoUpdateRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.delete("/comandos/{id_comando}")
+@app.delete("/comandos/{id_comando}", tags=["Comandos"])
 def eliminar_comando(id_comando: int):
     try:
         VehiculoIOTService.eliminar_comando(id_comando)
@@ -159,14 +164,14 @@ def eliminar_comando(id_comando: int):
 
 
 # --- ENDPOINTS: ESTADO E HISTORIAL ---
-@app.get("/vehiculos/{id_vehiculo}/estado")
+@app.get("/vehiculos/{id_vehiculo}/estado", tags=["Estado"])
 def get_estado(id_vehiculo: int):
     estado = VehiculoIOTService.obtener_estado(id_vehiculo)
     if not estado:
         raise HTTPException(status_code=404, detail="Estado no encontrado")
     return {"vehiculo_id": id_vehiculo, "estado": estado}
 
-@app.put("/vehiculos/{id_vehiculo}/estado")
+@app.put("/vehiculos/{id_vehiculo}/estado", tags=["Estado"])
 def actualizar_estado_vehiculo(id_vehiculo: int, data: EstadoUpdateRequest):
     try:
         VehiculoIOTService.actualizar_estado(id_vehiculo, data.id_comando_actual, data.conectado)
@@ -174,12 +179,12 @@ def actualizar_estado_vehiculo(id_vehiculo: int, data: EstadoUpdateRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.get("/vehiculos/{id_vehiculo}/historial")
+@app.get("/vehiculos/{id_vehiculo}/historial", tags=["Historial"])
 def get_historial(id_vehiculo: int):
     historial = VehiculoIOTService.obtener_historial(id_vehiculo)
     return {"vehiculo_id": id_vehiculo, "total_registros": len(historial), "historial": historial}
 
-@app.post("/vehiculos/{id_vehiculo}/historial")
+@app.post("/vehiculos/{id_vehiculo}/historial", tags=["Historial"])
 def registrar_historial(id_vehiculo: int, data: HistorialCreateRequest):
     try:
         VehiculoIOTService.registrar_historial(id_vehiculo, data.id_comando, data.origen)
@@ -189,7 +194,7 @@ def registrar_historial(id_vehiculo: int, data: HistorialCreateRequest):
 
 
 # --- ENDPOINTS: DEMOS Y MOVIMIENTOS ---
-@app.post("/vehiculos/{id_vehiculo}/demos")
+@app.post("/vehiculos/{id_vehiculo}/demos", tags=["DEMO"])
 def crear_demo(id_vehiculo: int, data: DemoCreateRequest):
     try:
         id_demo = VehiculoIOTService.crear_demo(id_vehiculo, data.nombre, data.descripcion)
@@ -197,12 +202,12 @@ def crear_demo(id_vehiculo: int, data: DemoCreateRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.get("/vehiculos/{id_vehiculo}/demos")
+@app.get("/vehiculos/{id_vehiculo}/demos", tags=["DEMO"])
 def obtener_demos(id_vehiculo: int):
     demos = VehiculoIOTService.obtener_demos(id_vehiculo)
     return {"vehiculo_id": id_vehiculo, "demos": demos}
 
-@app.put("/demos/{id_demo}")
+@app.put("/demos/{id_demo}", tags=["DEMO"])
 def actualizar_demo(id_demo: int, data: DemoUpdateRequest):
     try:
         VehiculoIOTService.actualizar_demo(id_demo, data.nombre, data.descripcion, data.activo)
@@ -210,7 +215,7 @@ def actualizar_demo(id_demo: int, data: DemoUpdateRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.delete("/demos/{id_demo}")
+@app.delete("/demos/{id_demo}", tags=["DEMO"])
 def eliminar_demo(id_demo: int):
     try:
         VehiculoIOTService.eliminar_demo(id_demo)
@@ -218,7 +223,7 @@ def eliminar_demo(id_demo: int):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.post("/demos/{id_demo}/movimientos")
+@app.post("/demos/{id_demo}/movimientos", tags=["Movimientos DEMO"])
 def agregar_movimiento_demo(id_demo: int, data: MovimientoDemoRequest):
     try:
         VehiculoIOTService.agregar_movimiento_demo(id_demo, data.id_comando, data.orden, data.duracion_ms, data.pausa_ms)
@@ -226,12 +231,12 @@ def agregar_movimiento_demo(id_demo: int, data: MovimientoDemoRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.get("/demos/{id_demo}/movimientos")
+@app.get("/demos/{id_demo}/movimientos", tags=["Movimientos DEMO"])
 def get_movimientos_demo(id_demo: int):
     movs = VehiculoIOTService.obtener_movimientos_demo(id_demo)
     return {"id_demo": id_demo, "movimientos": movs}
 
-@app.put("/demo-movimientos/{id_movimiento}")
+@app.put("/demo-movimientos/{id_movimiento}", tags=["Movimientos DEMO"])
 def actualizar_movimiento_demo(id_movimiento: int, data: MovimientoDemoRequest):
     try:
         VehiculoIOTService.actualizar_movimiento_demo(id_movimiento, data.id_comando, data.orden, data.duracion_ms, data.pausa_ms)
@@ -239,7 +244,7 @@ def actualizar_movimiento_demo(id_movimiento: int, data: MovimientoDemoRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.delete("/demo-movimientos/{id_movimiento}")
+@app.delete("/demo-movimientos/{id_movimiento}", tags=["Movimientos DEMO"])
 def eliminar_movimiento_demo(id_movimiento: int):
     try:
         VehiculoIOTService.eliminar_movimiento_demo(id_movimiento)
@@ -249,7 +254,7 @@ def eliminar_movimiento_demo(id_movimiento: int):
 
 
 # --- CONTROLADOR DE ACCIÓN Y WEBSOCKETS ---
-@app.post("/vehiculos/{id_vehiculo}/mover")
+@app.post("/vehiculos/{id_vehiculo}/mover", tags=["Acciones en Tiempo Real"])
 async def ejecutar_movimiento_individual(id_vehiculo: int, data: MovimientoIndividualRequest):
     vehiculo = VehiculoIOTService.obtener_vehiculo(id_vehiculo)
     if not vehiculo or not vehiculo.get("activo"):
@@ -282,7 +287,7 @@ async def ejecutar_movimiento_individual(id_vehiculo: int, data: MovimientoIndiv
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.post("/vehiculos/{id_vehiculo}/ejecutar-demo")
+@app.post("/vehiculos/{id_vehiculo}/ejecutar-demo", tags=["Acciones en Tiempo Real"])
 async def ejecutar_demo(id_vehiculo: int, data: DemoEjecucionRequest):
     movimientos = VehiculoIOTService.obtener_movimientos_demo(data.id_demo)
     if not movimientos:
@@ -330,13 +335,9 @@ async def websocket_endpoint(websocket: WebSocket, id_vehiculo: int):
     try:
         estado_actual = VehiculoIOTService.obtener_estado(id_vehiculo)
         await websocket.send_json({"evento": "estado_inicial", "estado": jsonable_encoder(estado_actual)})
-        
+
         while True:
             await websocket.receive_text()
     except Exception as e:
         print(f"Error en WebSocket: {e}")
         manager.disconnect(id_vehiculo, websocket)
-
-@app.get("/")
-def read_root():
-    return {"message": "API de Retroexcavadora IoT activa y conectada a AWS RDS"}
